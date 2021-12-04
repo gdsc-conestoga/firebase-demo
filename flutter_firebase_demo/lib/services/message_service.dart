@@ -1,13 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_firebase_demo/models/message.dart';
 
 class MessageService {
-  static final List<Message> _messages = [];
-
-  static List<Message> getMessages() {
-    return _messages;
+  static Future<List<Message>> getMessages() async {
+    final snapshots = await FirebaseFirestore.instance.collection('messages').get();
+    return snapshots.docs.map((doc) => Message.fromDocumentSnapshot(doc)).toList();
   }
 
   static void addMessage(Message message) {
-    _messages.add(message);
+    FirebaseFirestore.instance.collection('messages').add(message.toMap());
   }
 }

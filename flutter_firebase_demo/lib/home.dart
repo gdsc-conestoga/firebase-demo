@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_demo/models/message.dart';
 import 'package:flutter_firebase_demo/services/message_service.dart';
@@ -16,7 +17,11 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    items = MessageService.getMessages();
+    MessageService.getMessages().then((value) {
+      setState(() {
+        items = value;
+      });
+    });
     super.initState();
   }
 
@@ -57,11 +62,15 @@ class _HomeState extends State<Home> {
     );
   }
 
-  void _postMessage() {
-    final message = Message(author: 'Anonymous', title: messageController.text);
+  void _postMessage() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final message = Message(author: user.email ?? "Anonymous", title: messageController.text);
     MessageService.addMessage(message);
+    final messages = await MessageService.getMessages();
     setState(() {
-      items = MessageService.getMessages();
+      items = messages;
     });
   }
 }
